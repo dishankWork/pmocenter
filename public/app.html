@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM Command Center — Airlinq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & BASE ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f0f2f8;
+  --surface: #ffffff;
+  --surface2: #f5f6fb;
+  --accent: #2926E2;
+  --accent-hover: #1e1cb8;
+  --sidebar-bg: #0d0f1f;
+  --green: #0f9d6e;
+  --amber: #c47d0a;
+  --red: #d63a3a;
+  --purple: #6d4fcc;
+  --teal: #0891b2;
+  --border: rgba(41,38,226,0.10);
+  --border-strong: rgba(41,38,226,0.22);
+  --text: #0f1124;
+  --text-muted: #4a4f72;
+  --text-dim: #9297b8;
+  --font: 'Inter', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --display: 'Libre Baskerville', serif;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(41,38,226,0.07);
+  --shadow-md: 0 4px 24px rgba(41,38,226,0.10);
+}
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; font-family: var(--font); border: none; outline: none; }
+input, select, textarea { font-family: var(--font); outline: none; }
+
+/* ── LAYOUT ───────────────────────────────────────────── */
+#app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 220px; min-height: 100vh; background: var(--sidebar-bg);
+  display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 100;
+}
+.main-area { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── SIDEBAR ──────────────────────────────────────────── */
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.sidebar-logo .logo-text {
+  font-size: 18px; font-weight: 800; letter-spacing: 0.12em; color: #fff;
+}
+.sidebar-logo .logo-sub { font-size: 10px; color: #9297b8; margin-top: 2px; letter-spacing: 0.04em; }
+.nav-section-label {
+  font-size: 9.5px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #9297b8; padding: 20px 20px 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px; font-size: 13.5px; font-weight: 500; color: rgba(255,255,255,0.7);
+  cursor: pointer; transition: background 0.15s, color 0.15s; border-radius: 0;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.nav-item.active { background: rgba(41,38,226,0.25); color: #fff; border-left-color: var(--accent); }
+.nav-item.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+.nav-icon { width: 16px; height: 16px; opacity: 0.8; flex-shrink: 0; }
+.sidebar-spacer { flex: 1; }
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center; gap: 10px;
+}
+.user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+  background: var(--accent);
+}
+.footer-name { font-size: 12px; font-weight: 600; color: #fff; line-height: 1.3; }
+.footer-role { font-size: 10px; color: #9297b8; }
+
+/* ── TOPBAR ───────────────────────────────────────────── */
+.topbar {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 32px; height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50; box-shadow: var(--shadow);
+}
+.breadcrumb { font-size: 13px; color: var(--text-muted); }
+.breadcrumb .current { color: var(--text); font-weight: 600; }
+.breadcrumb .sep { margin: 0 6px; color: var(--text-dim); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.date-chip {
+  font-family: var(--mono); font-size: 11.5px; color: var(--text-muted);
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 5px 12px; border-radius: 20px;
+}
+.btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; transition: 0.15s; }
+.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border-strong); }
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
+.btn-primary { background: var(--accent); color: #fff; border: none; font-weight: 600; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(214,58,58,0.3); }
+.btn-danger:hover { background: rgba(214,58,58,0.06); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-icon { background: transparent; color: var(--text-muted); padding: 7px; border-radius: 8px; border: 1px solid var(--border); }
+.btn-icon:hover { background: var(--surface2); color: var(--text); }
+
+/* ── PAGE CONTENT ─────────────────────────────────────── */
+.page-content { flex: 1; padding: 32px; }
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── PAGE HEADER ──────────────────────────────────────── */
+.page-header { margin-bottom: 28px; }
+.page-header h1 { font-family: var(--display); font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.page-header .sub { font-size: 13.5px; color: var(--text-muted); margin-top: 6px; }
+
+/* ── STATS GRID ───────────────────────────────────────── */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 22px;
+  box-shadow: var(--shadow);
+}
+.stat-label { font-size: 11.5px; font-weight: 600; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
+.stat-value { font-size: 32px; font-weight: 800; color: var(--text); margin-top: 6px; font-family: var(--display); }
+.stat-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+.stat-card.accent-green .stat-value { color: var(--green); }
+.stat-card.accent-red .stat-value { color: var(--red); }
+.stat-card.accent-blue .stat-value { color: var(--accent); }
+
+/* ── DASHBOARD TILES ──────────────────────────────────── */
+.tiles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+.tile {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+  box-shadow: var(--shadow); cursor: pointer; transition: 0.2s; position: relative; overflow: hidden;
+}
+.tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.tile-icon { font-size: 28px; margin-bottom: 12px; }
+.tile-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.tile-desc { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+.tile-badge {
+  position: absolute; top: 14px; right: 14px;
+  background: var(--surface2); color: var(--text-dim);
+  font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px;
+  border: 1px solid var(--border);
+}
+.tile.coming-soon { cursor: default; }
+.tile.coming-soon:hover { transform: none; box-shadow: var(--shadow); }
+.coming-soon-overlay {
+  position: absolute; inset: 0;
+  background: rgba(245,246,251,0.92);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.2s;
+}
+.tile.coming-soon:hover .coming-soon-overlay { opacity: 1; }
+.coming-soon-badge {
+  background: var(--sidebar-bg); color: #fff;
+  font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: 20px;
+  letter-spacing: 0.06em;
+}
+.tile.primary-tile { border-top: 3px solid var(--accent); }
+.tile.primary-tile .tile-badge { background: rgba(41,38,226,0.1); color: var(--accent); border-color: rgba(41,38,226,0.2); }
+
+/* ── DASHBOARD BOTTOM ─────────────────────────────────── */
+.dash-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.card-header {
+  background: var(--surface2); border-bottom: 1px solid var(--border);
+  padding: 14px 20px; border-radius: var(--radius) var(--radius) 0 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-title { font-size: 13px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.card-body { padding: 16px 20px; }
+.activity-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.activity-item:last-child { border-bottom: none; }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.activity-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+.activity-time { font-size: 11px; color: var(--text-dim); margin-top: 2px; font-family: var(--mono); }
+.milestone-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.milestone-item:last-child { border-bottom: none; }
+.milestone-name { font-size: 13px; color: var(--text); font-weight: 500; }
+.milestone-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+.milestone-amount { font-size: 13px; font-weight: 700; color: var(--green); font-family: var(--mono); }
+
+/* ── PROJECT LIST ─────────────────────────────────────── */
+.list-toolbar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px; flex-wrap: wrap;
+}
+.search-input {
+  flex: 1; min-width: 200px; padding: 9px 14px;
+  border: 1.5px solid var(--border-strong); border-radius: 8px;
+  font-size: 13.5px; color: var(--text); background: var(--surface);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(41,38,226,0.08); }
+.filter-select {
+  padding: 9px 14px; border: 1.5px solid var(--border-strong); border-radius: 8px;
+  font-size: 13.5px; color: var(--text); background: var(--surface);
+  min-width: 150px; cursor: pointer;
+}
+.project-count { font-size: 13px; color: var(--text-muted); margin-left: 4px; }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: var(--surface2); }
+th { padding: 12px 16px; text-align: left; font-size: 11.5px; font-weight: 600; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+td { padding: 14px 16px; font-size: 13.5px; color: var(--text); border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tbody tr { transition: background 0.12s; cursor: pointer; }
+tbody tr:hover { background: var(--surface2); }
+.owner-cell { display: flex; align-items: center; gap: 9px; }
+.owner-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.progress-cell { display: flex; align-items: center; gap: 10px; }
+.progress-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; min-width: 80px; }
+.progress-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+.progress-fill.green { background: var(--green); }
+.progress-fill.amber { background: var(--amber); }
+.progress-fill.red { background: var(--red); }
+.progress-pct { font-size: 12px; font-weight: 600; color: var(--text-muted); font-family: var(--mono); min-width: 32px; }
+.status-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+}
+.status-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+.status-pill.on-track { background: rgba(15,157,110,0.1); color: var(--green); }
+.status-pill.on-track::before { background: var(--green); }
+.status-pill.at-risk { background: rgba(214,58,58,0.1); color: var(--red); }
+.status-pill.at-risk::before { background: var(--red); }
+.status-pill.delayed { background: rgba(196,125,10,0.1); color: var(--amber); }
+.status-pill.delayed::before { background: var(--amber); }
+.status-pill.completed { background: rgba(109,79,204,0.1); color: var(--purple); }
+.status-pill.completed::before { background: var(--purple); }
+
+/* ── PROJECT DETAIL ───────────────────────────────────── */
+.project-hero {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px 32px;
+  border-top: 3px solid var(--accent); box-shadow: var(--shadow-md); margin-bottom: 24px;
+}
+.hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.hero-title-block {}
+.hero-title { font-family: var(--display); font-size: 26px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.hero-code { font-family: var(--mono); font-size: 12px; color: var(--text-dim); margin-top: 5px; }
+.hero-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.pulse-indicator { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+.pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(1.3); } }
+.hero-meta-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.meta-item { }
+.meta-label { font-size: 11px; font-weight: 600; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 5px; }
+.meta-value { font-size: 14px; font-weight: 600; color: var(--text); }
+.export-dropdown { position: relative; }
+.export-menu {
+  position: absolute; top: calc(100% + 6px); right: 0;
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: 10px; box-shadow: var(--shadow-md); z-index: 200;
+  min-width: 160px; overflow: hidden; display: none;
+}
+.export-menu.open { display: block; }
+.export-menu-item {
+  padding: 11px 16px; font-size: 13px; color: var(--text);
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+  transition: background 0.12s;
+}
+.export-menu-item:hover { background: var(--surface2); }
+
+/* ── SECTIONS GRID ────────────────────────────────────── */
+.sections-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.section-full { grid-column: 1 / -1; }
+.section-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.section-header {
+  background: var(--surface2); border-bottom: 1px solid var(--border);
+  padding: 13px 18px; display: flex; align-items: center; justify-content: space-between;
+}
+.section-title { font-size: 13px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.section-body { padding: 16px 18px; }
+.section-icon { font-size: 15px; }
+.confidential-badge {
+  background: rgba(214,58,58,0.1); color: var(--red);
+  font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.06em;
+}
+
+/* Risk items */
+.risk-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.risk-item:last-child { border-bottom: none; }
+.risk-badge { padding: 2px 8px; border-radius: 4px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; flex-shrink: 0; margin-top: 1px; }
+.risk-badge.HIGH { background: rgba(214,58,58,0.12); color: var(--red); }
+.risk-badge.MEDIUM { background: rgba(196,125,10,0.12); color: var(--amber); }
+.risk-badge.LOW { background: rgba(15,157,110,0.12); color: var(--green); }
+.risk-text { font-size: 13px; color: var(--text); line-height: 1.4; flex: 1; }
+.risk-owner { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+
+/* Actions */
+.action-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.action-item:last-child { border-bottom: none; }
+.action-check {
+  width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--border-strong);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px;
+}
+.action-check.done { background: var(--green); border-color: var(--green); color: #fff; font-size: 11px; }
+.action-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+.action-text.done { text-decoration: line-through; color: var(--text-dim); }
+.action-meta { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+
+/* Highlights */
+.highlight-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.highlight-item:last-child { border-bottom: none; }
+.highlight-dot { color: var(--green); font-size: 16px; line-height: 1.3; flex-shrink: 0; }
+.highlight-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+/* Next Steps */
+.step-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.step-item:last-child { border-bottom: none; }
+.step-num {
+  width: 24px; height: 24px; border-radius: 50%; background: var(--accent);
+  color: #fff; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.step-text { font-size: 13px; color: var(--text); line-height: 1.4; flex: 1; }
+.step-due { font-size: 11px; color: var(--text-dim); margin-top: 3px; font-family: var(--mono); }
+
+/* Pain Points */
+.pain-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.pain-item:last-child { border-bottom: none; }
+.pain-icon { color: var(--amber); font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.pain-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+
+/* Issues */
+.issues-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.issue-card {
+  border-radius: 10px; padding: 16px; text-align: center;
+  border: 1.5px solid transparent;
+}
+.issue-card.open { background: rgba(214,58,58,0.07); border-color: rgba(214,58,58,0.2); }
+.issue-card.progress { background: rgba(196,125,10,0.07); border-color: rgba(196,125,10,0.2); }
+.issue-card.resolved { background: rgba(15,157,110,0.07); border-color: rgba(15,157,110,0.2); }
+.issue-card.blocker { background: rgba(109,79,204,0.07); border-color: rgba(109,79,204,0.2); }
+.issue-num { font-size: 32px; font-weight: 800; font-family: var(--display); }
+.issue-card.open .issue-num { color: var(--red); }
+.issue-card.progress .issue-num { color: var(--amber); }
+.issue-card.resolved .issue-num { color: var(--green); }
+.issue-card.blocker .issue-num { color: var(--purple); }
+.issue-label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); margin-top: 4px; }
+
+/* Billing */
+.billing-locked {
+  padding: 32px 20px; text-align: center; color: var(--text-muted);
+}
+.billing-lock-icon { font-size: 32px; margin-bottom: 10px; }
+.billing-lock-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.billing-lock-sub { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+.billing-table { width: 100%; border-collapse: collapse; }
+.billing-table th { padding: 10px 14px; text-align: left; font-size: 11.5px; font-weight: 600; color: var(--text-dim); letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+.billing-table td { padding: 11px 14px; font-size: 13.5px; border-bottom: 1px solid var(--border); }
+.billing-table tr:last-child td { border-bottom: none; }
+.billing-status-pill { display: inline-flex; padding: 2px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+.billing-status-pill.paid { background: rgba(15,157,110,0.1); color: var(--green); }
+.billing-status-pill.pending { background: rgba(196,125,10,0.1); color: var(--amber); }
+.billing-status-pill.upcoming { background: rgba(146,151,184,0.15); color: var(--text-muted); }
+.billing-total { font-size: 13px; color: var(--text-dim); }
+.billing-total strong { color: var(--green); font-family: var(--mono); }
+.eye-btn {
+  background: transparent; border: 1px solid var(--border-strong);
+  border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 500; color: var(--text-muted);
+  cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.15s;
+}
+.eye-btn:hover { background: var(--surface); color: var(--text); }
+.access-denied {
+  padding: 28px 20px; text-align: center; color: var(--text-muted);
+  background: repeating-linear-gradient(45deg, var(--surface2), var(--surface2) 10px, var(--surface) 10px, var(--surface) 20px);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.access-denied-icon { font-size: 24px; margin-bottom: 8px; }
+.access-denied-text { font-size: 13px; font-weight: 600; color: var(--text-dim); }
+
+/* ── FORM ─────────────────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px; }
+.form-grid.three { grid-template-columns: repeat(3, 1fr); }
+.form-grid.four { grid-template-columns: repeat(4, 1fr); }
+.form-group-field { display: flex; flex-direction: column; gap: 6px; }
+.form-group-field.full { grid-column: 1 / -1; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.form-input {
+  padding: 10px 13px; border: 1.5px solid var(--border-strong); border-radius: 8px;
+  font-size: 13.5px; color: var(--text); background: var(--surface);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(41,38,226,0.08); }
+.form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239297b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
+
+.dynamic-list { display: flex; flex-direction: column; gap: 10px; }
+.dynamic-row { display: flex; align-items: center; gap: 8px; }
+.dynamic-row .form-input { flex: 1; }
+.remove-btn {
+  width: 28px; height: 28px; border-radius: 6px; background: rgba(214,58,58,0.1);
+  color: var(--red); font-size: 16px; display: flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; flex-shrink: 0; transition: background 0.15s;
+}
+.remove-btn:hover { background: rgba(214,58,58,0.2); }
+.add-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  background: rgba(41,38,226,0.07); color: var(--accent); border: 1px dashed rgba(41,38,226,0.3);
+  cursor: pointer; margin-top: 6px; transition: 0.15s;
+}
+.add-btn:hover { background: rgba(41,38,226,0.12); }
+.form-actions { display: flex; align-items: center; gap: 12px; padding-top: 8px; }
+.form-card-header { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 14px 20px; }
+.form-card-title { font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+.form-card-body { padding: 20px; }
+.issues-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.done-check { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
+
+/* ── TECH ARCHITECTURE ────────────────────────────────── */
+.arch-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.arch-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.arch-card-header { padding: 14px 20px; font-size: 13px; font-weight: 700; color: #fff; }
+.arch-card-header.auth { background: #1a1060; }
+.arch-card-header.api { background: #0c3547; }
+.arch-card-header.db { background: #2d0f3c; }
+.arch-card-header.fe { background: #0f2d1a; }
+.arch-card-body { padding: 16px 20px; }
+.arch-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.arch-item:last-child { border-bottom: none; }
+.arch-item-icon { font-size: 18px; flex-shrink: 0; }
+.arch-item-name { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.arch-item-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* ── TOAST ────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: var(--surface); border: 1.5px solid var(--green);
+  border-radius: 10px; padding: 14px 20px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  transform: translateY(120%); opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  max-width: 320px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast-icon { color: var(--green); font-size: 18px; }
+.toast-text { font-size: 13.5px; font-weight: 500; color: var(--text); }
+.toast-error { border-color: var(--red); }
+.toast-error .toast-icon { color: var(--red); }
+
+/* ── EMPTY STATE ──────────────────────────────────────── */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty-state-icon { font-size: 40px; margin-bottom: 14px; }
+.empty-state-title { font-size: 16px; font-weight: 600; color: var(--text); }
+.empty-state-sub { font-size: 13px; margin-top: 6px; }
+
+/* ── LOADING ──────────────────────────────────────────── */
+.loading-overlay { display: flex; align-items: center; justify-content: center; padding: 60px 0; }
+.spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">AIRLINQ</div>
+      <div class="logo-sub">PM Command Center</div>
+    </div>
+    <div class="nav-section-label">Navigation</div>
+    <div class="nav-item active" data-screen="dashboard">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" data-screen="projects">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Projects
+    </div>
+    <div class="nav-item" data-screen="form">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+      Add Project
+    </div>
+    <div class="nav-item" data-screen="arch">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+      Tech Architecture
+    </div>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-footer">
+      <div class="user-avatar" id="sidebarAvatar">?</div>
+      <div>
+        <div class="footer-name" id="sidebarName">Loading...</div>
+        <div class="footer-role" id="sidebarRole"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <div class="main-area">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="breadcrumb">
+        <span id="breadcrumbRoot">Dashboard</span>
+        <span class="sep" id="breadcrumbSep" style="display:none">›</span>
+        <span class="current" id="breadcrumbCurrent"></span>
+      </div>
+      <div class="topbar-right">
+        <span class="date-chip" id="topbarDate"></span>
+        <button class="btn btn-ghost btn-sm" id="btnAddNew">+ New Project</button>
+        <button class="btn btn-primary btn-sm" onclick="showScreen('projects')">View Projects</button>
+        <button class="btn-icon" id="btnLogout" title="Logout">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <main class="page-content">
+
+      <!-- ── SCREEN: DASHBOARD ── -->
+      <div class="screen active" id="screen-dashboard">
+        <div class="page-header">
+          <h1>Program Command Centre</h1>
+          <p class="sub" id="dashSubtitle">Loading...</p>
+        </div>
+        <div style="margin-bottom:28px">
+          <div class="tile primary-tile" onclick="showScreen('projects')" style="border-top:3px solid var(--accent);max-width:320px">
+            <div class="tile-badge">Live</div>
+            <div class="tile-icon">📊</div>
+            <div class="tile-title">Project Portfolio</div>
+            <div class="tile-desc">View and manage all active projects</div>
+          </div>
+        </div>
+        <div class="dash-bottom">
+          <div class="card">
+            <div class="card-header"><span class="card-title">🕐 Recent Activity</span></div>
+            <div class="card-body" id="activityFeed">
+              <div class="loading-overlay"><div class="spinner"></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">📅 Upcoming Milestones</span></div>
+            <div class="card-body" id="milestonesFeed">
+              <div class="loading-overlay"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SCREEN: PROJECT LIST ── -->
+      <div class="screen" id="screen-projects">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <h1>Project Portfolio <span class="project-count" id="projectCount"></span></h1>
+          </div>
+        </div>
+        <div class="list-toolbar">
+          <input class="search-input" type="text" id="searchInput" placeholder="🔍  Search projects, owners, codes…">
+          <select class="filter-select form-select" id="statusFilter">
+            <option value="">All Statuses</option>
+            <option value="On Track">On Track</option>
+            <option value="At Risk">At Risk</option>
+            <option value="Delayed">Delayed</option>
+            <option value="Completed">Completed</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="openNewProjectForm()">+ Update Project</button>
+          <button class="btn btn-ghost btn-sm" id="btnExportPortfolio">⬇ Export Portfolio</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Owner</th>
+                <th>Status</th>
+                <th>Progress</th>
+                <th>Due Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="projectsTableBody">
+              <tr><td colspan="6"><div class="loading-overlay"><div class="spinner"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── SCREEN: PROJECT DETAIL ── -->
+      <div class="screen" id="screen-detail">
+        <div id="detailContent">
+          <div class="loading-overlay"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- ── SCREEN: FORM ── -->
+      <div class="screen" id="screen-form">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
+          <h1 id="formTitle">Update Project Details</h1>
+          <div class="form-actions">
+            <button class="btn btn-ghost" id="btnCancelForm">Cancel</button>
+            <button class="btn btn-primary" id="btnSaveProject">Save Project</button>
+          </div>
+        </div>
+
+        <!-- Card 1: Overview -->
+        <div class="form-card">
+          <div class="form-card-header"><div class="form-card-title">📋 Project Overview</div></div>
+          <div class="form-card-body">
+            <div class="form-grid">
+              <div class="form-group-field">
+                <label class="form-label">Project Name *</label>
+                <input class="form-input" type="text" id="fName" placeholder="e.g. Apollo CRM Migration">
+              </div>
+              <div class="form-group-field">
+                <label class="form-label">Project Code *</label>
+                <input class="form-input" type="text" id="fCode" placeholder="e.g. PRJ-2026-001">
+              </div>
+              <div class="form-group-field">
+                <label class="form-label">Project Owner *</label>
+                <input class="form-input" type="text" id="fOwner" placeholder="e.g. Ritesh Verma">
+              </div>
+              <div class="form-group-field">
+                <label class="form-label">Status</label>
+                <select class="form-input form-select" id="fStatus">
+                  <option>On Track</option>
+                  <option>At Risk</option>
+                  <option>Delayed</option>
+                  <option>Completed</option>
+                </select>
+              </div>
+              <div class="form-group-field">
+                <label class="form-label">Start Date</label>
+                <input class="form-input" type="date" id="fStartDate">
+              </div>
+              <div class="form-group-field">
+                <label class="form-label">Target Go-Live</label>
+                <input class="form-input" type="date" id="fEndDate">
+              </div>
+              <div class="form-group-field">
+                <label class="form-label">Budget</label>
+                <input class="form-input" type="text" id="fBudget" placeholder="e.g. $450,000">
+              </div>
+              <div class="form-group-field">
+                <label class="form-label">% Complete (0–100)</label>
+                <input class="form-input" type="number" id="fProgress" min="0" max="100" placeholder="0">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Risks -->
+        <div class="form-card">
+          <div class="form-card-header"><div class="form-card-title">⚠️ Risks</div></div>
+          <div class="form-card-body">
+            <div class="dynamic-list" id="risksList"></div>
+            <button class="add-btn" onclick="addRiskRow()">+ Add Risk</button>
+          </div>
+        </div>
+
+        <!-- Card 3: Actions -->
+        <div class="form-card">
+          <div class="form-card-header"><div class="form-card-title">✅ Actions from Management</div></div>
+          <div class="form-card-body">
+            <div class="dynamic-list" id="actionsList"></div>
+            <button class="add-btn" onclick="addActionRow()">+ Add Action</button>
+          </div>
+        </div>
+
+        <!-- Card 4: Highlights -->
+        <div class="form-card">
+          <div class="form-card-header"><div class="form-card-title">🌟 Highlights</div></div>
+          <div class="form-card-body">
+            <div class="dynamic-list" id="highlightsList"></div>
+            <button class="add-btn" onclick="addHighlightRow()">+ Add Highlight</button>
+          </div>
+        </div>
+
+        <!-- Card 5: Next Steps -->
+        <div class="form-card">
+          <div class="form-card-header"><div class="form-card-title">➡️ Next Steps</div></div>
+          <div class="form-card-body">
+            <div class="dynamic-list" id="nextstepsList"></div>
+            <button class="add-btn" onclick="addNextStepRow()">+ Add Step</button>
+          </div>
+        </div>
+
+        <!-- Card 6: Pain Points -->
+        <div class="form-card">
+          <div class="form-card-header"><div class="form-card-title">⚡ Pain Points</div></div>
+          <div class="form-card-body">
+            <div class="dynamic-list" id="painList"></div>
+            <button class="add-btn" onclick="addPainRow()">+ Add Pain Point</button>
+          </div>
+        </div>
+
+        <!-- Card 7: Billing -->
+        <div class="form-card">
+          <div class="form-card-header"><div class="form-card-title">💳 Billing Milestones</div></div>
+          <div class="form-card-body">
+            <div class="dynamic-list" id="billingList"></div>
+            <button class="add-btn" onclick="addBillingRow()">+ Add Milestone</button>
+          </div>
+        </div>
+
+        <!-- Card 8: Issues -->
+        <div class="form-card">
+          <div class="form-card-header"><div class="form-card-title">🐛 Issue Counts</div></div>
+          <div class="form-card-body">
+            <div class="issues-form-grid">
+              <div class="form-group-field">
+                <label class="form-label">Open Issues</label>
+                <input class="form-input" type="number" id="fIssueOpen" min="0" value="0">
+              </div>
+              <div class="form-group-field">
+                <label class="form-label">In Progress</label>
+                <input class="form-input" type="number" id="fIssueProgress" min="0" value="0">
+              </div>
+              <div class="form-group-field">
+                <label class="form-label">Resolved</label>
+                <input class="form-input" type="number" id="fIssueResolved" min="0" value="0">
+              </div>
+              <div class="form-group-field">
+                <label class="form-label">Blockers</label>
+                <input class="form-input" type="number" id="fIssueBlocker" min="0" value="0">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions" style="padding-bottom:40px">
+          <button class="btn btn-ghost" id="btnCancelForm2">Cancel</button>
+          <button class="btn btn-primary" id="btnSaveProject2">Save Project</button>
+        </div>
+      </div>
+
+      <!-- ── SCREEN: TECH ARCHITECTURE ── -->
+      <div class="screen" id="screen-arch">
+        <div class="page-header">
+          <h1>Tech Architecture</h1>
+          <p class="sub">Technology stack powering the PM Command Center</p>
+        </div>
+        <div class="arch-grid">
+          <div class="arch-card">
+            <div class="arch-card-header auth">🔐 Auth Layer</div>
+            <div class="arch-card-body">
+              <div class="arch-item"><div class="arch-item-icon">🔑</div><div><div class="arch-item-name">bcryptjs</div><div class="arch-item-desc">Password hashing with salt rounds — secure credential storage</div></div></div>
+              <div class="arch-item"><div class="arch-item-icon">🎫</div><div><div class="arch-item-name">jsonwebtoken (JWT)</div><div class="arch-item-desc">Stateless auth tokens stored in httpOnly cookies — 8hr expiry</div></div></div>
+              <div class="arch-item"><div class="arch-item-icon">🍪</div><div><div class="arch-item-name">cookie-parser</div><div class="arch-item-desc">Secure httpOnly, sameSite:lax cookie handling</div></div></div>
+              <div class="arch-item"><div class="arch-item-icon">👤</div><div><div class="arch-item-name">RBAC Middleware</div><div class="arch-item-desc">Role-based access: program-director, cxo, pm, client</div></div></div>
+            </div>
+          </div>
+          <div class="arch-card">
+            <div class="arch-card-header api">🔌 API Layer</div>
+            <div class="arch-card-body">
+              <div class="arch-item"><div class="arch-item-icon">🚀</div><div><div class="arch-item-name">Node.js + Express</div><div class="arch-item-desc">RESTful API with JSON responses — no build step required</div></div></div>
+              <div class="arch-item"><div class="arch-item-icon">📄</div><div><div class="arch-item-name">pdfkit</div><div class="arch-item-desc">A4 PDF generation with branded headers, tables, and charts</div></div></div>
+              <div class="arch-item"><div class="arch-item-icon">📊</div><div><div class="arch-item-name">exceljs</div><div class="arch-item-desc">Multi-sheet Excel exports with styled headers and colored data</div></div></div>
+              <div class="arch-item"><div class="arch-item-icon">🛡️</div><div><div class="arch-item-name">Auth Middleware</div><div class="arch-item-desc">All /api/projects and /api/export routes protected by JWT</div></div></div>
+            </div>
+          </div>
+          <div class="arch-card">
+            <div class="arch-card-header db">🗄️ Database Layer</div>
+            <div class="arch-card-body">
+              <div class="arch-item"><div class="arch-item-icon">💾</div><div><div class="arch-item-name">sql.js (SQLite)</div><div class="arch-item-desc">Pure JS SQLite — no native bindings, persisted to data/pm.db</div></div></div>
+              <div class="arch-item"><div class="arch-item-icon">🌱</div><div><div class="arch-item-name">Auto-seeding</div><div class="arch-item-desc">Seeds 6 users + 5 projects with full data on first run</div></div></div>
+              <div class="arch-item"><div class="arch-item-icon">📝</div><div><div class="arch-item-name">9 Tables</div><div class="arch-item-desc">users, projects, risks, actions, highlights, nextsteps, pain, billing, issues</div></div></div>
+              <div class="arch-item"><div class="arch-item-icon">🔄</div><div><div class="arch-item-name">Replace Pattern</div><div class="arch-item-desc">Child records deleted + re-inserted on every PUT for simplicity</div></div></div>
+            </div>
+          </div>
+          <div class="arch-card">
+            <div class="arch-card-header fe">🎨 Frontend Layer</div>
+            <div class="arch-card-body">
+              <div class="arch-item"><div class="arch-item-icon">📱</div><div><div class="arch-item-name">Vanilla HTML/CSS/JS</div><div class="arch-item-desc">Single-page app — no React, no build tools, no frameworks</div></div></div>
+              <div class="arch-item"><div class="arch-item-icon">🔤</div><div><div class="arch-item-name">Inter + Libre Baskerville</div><div class="arch-item-desc">Google Fonts — Inter UI, Libre Baskerville for display headings</div></div></div>
+              <div class="arch-item"><div class="arch-item-icon">🎯</div><div><div class="arch-item-name">Design System</div><div class="arch-item-desc">CSS variables, status pills, cards, grids — consistent tokens</div></div></div>
+              <div class="arch-item"><div class="arch-item-icon">🔒</div><div><div class="arch-item-name">RBAC Frontend</div><div class="arch-item-desc">_permissions from API drives show/hide of sensitive sections</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✓</span>
+  <span class="toast-text" id="toastText">Project saved successfully</span>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────
+let currentUser = null;
+let allProjects = [];
+let currentProject = null;
+let currentScreen = 'dashboard';
+let editingProjectId = null;
+let billingRevealed = false;
+
+// ── INIT ───────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const res = await apiFetch('/auth/me');
+    if (!res.ok) { window.location.href = '/login'; return; }
+    const data = await res.json();
+    currentUser = data.user;
+    initUI();
+    await Promise.all([loadProjects(), loadDashboardFeeds()]);
+  } catch (e) {
+    window.location.href = '/login';
+  }
+});
+
+function initUI() {
+  // Sidebar user info
+  const initials = currentUser.full_name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  document.getElementById('sidebarAvatar').textContent = initials;
+  document.getElementById('sidebarName').textContent = currentUser.full_name;
+  document.getElementById('sidebarRole').textContent = roleLabel(currentUser.role);
+
+  // Date chip
+  const now = new Date();
+  document.getElementById('topbarDate').textContent = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  document.getElementById('dashSubtitle').textContent = `Program overview for ${now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`;
+
+  // Nav clicks
+  document.querySelectorAll('.nav-item[data-screen]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = el.dataset.screen;
+      if (s === 'form') openNewProjectForm();
+      else {
+        showScreen(s);
+        if (s === 'dashboard') loadDashboardFeeds();
+      }
+    });
+  });
+
+  // Topbar
+  document.getElementById('btnLogout').addEventListener('click', logout);
+  document.getElementById('btnAddNew').addEventListener('click', openNewProjectForm);
+  document.getElementById('btnCancelForm').addEventListener('click', cancelForm);
+  document.getElementById('btnCancelForm2').addEventListener('click', cancelForm);
+  document.getElementById('btnSaveProject').addEventListener('click', saveProject);
+  document.getElementById('btnSaveProject2').addEventListener('click', saveProject);
+  document.getElementById('btnExportPortfolio').addEventListener('click', () => {
+    window.location.href = '/api/export/excel-portfolio';
+  });
+
+  // Search / filter
+  document.getElementById('searchInput').addEventListener('input', renderProjectsTable);
+  document.getElementById('statusFilter').addEventListener('change', renderProjectsTable);
+}
+
+function roleLabel(role) {
+  const map = { 'program-director': 'Program Director', 'cxo': 'CXO', 'pm': 'Project Manager', 'client': 'Client' };
+  return map[role] || role;
+}
+
+// ── API ────────────────────────────────────────────────
+function apiFetch(path, opts = {}) {
+  return fetch('/api' + path, { credentials: 'include', ...opts });
+}
+
+async function loadDashboardFeeds() {
+  try {
+    const res = await apiFetch('/dashboard');
+    if (!res.ok) throw new Error();
+    const { activity, milestones } = await res.json();
+
+    // Render activity feed
+    const activityEl = document.getElementById('activityFeed');
+    if (!activity.length) {
+      activityEl.innerHTML = '<div class="empty-state" style="padding:24px 0"><div class="empty-state-icon" style="font-size:28px">📭</div><div class="empty-state-sub">No activity yet. Start by creating or editing a project.</div></div>';
+    } else {
+      const actionColors = { created: 'var(--green)', updated: 'var(--accent)', deleted: 'var(--red)' };
+      activityEl.innerHTML = activity.map(a => {
+        const color = actionColors[a.action] || 'var(--text-dim)';
+        const label = a.action === 'created' ? 'Created' : a.action === 'deleted' ? 'Deleted' : 'Updated';
+        return `<div class="activity-item">
+          <div class="activity-dot" style="background:${color}"></div>
+          <div>
+            <div class="activity-text"><strong>${esc(a.project_name)}</strong> — ${esc(a.detail)}</div>
+            <div class="activity-time">${timeSince(a.created_at)}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // Render milestones feed
+    const milestonesEl = document.getElementById('milestonesFeed');
+    if (!milestones.length) {
+      milestonesEl.innerHTML = '<div class="empty-state" style="padding:24px 0"><div class="empty-state-icon" style="font-size:28px">📅</div><div class="empty-state-sub">No upcoming billing milestones.</div></div>';
+    } else {
+      milestonesEl.innerHTML = milestones.map(m => `
+        <div class="milestone-item">
+          <div>
+            <div class="milestone-name">${esc(m.project_name)} — ${esc(m.name)}</div>
+            <div class="milestone-meta">${esc(m.project_code)} · ${m.date || 'TBD'}</div>
+          </div>
+          <div class="milestone-amount">${esc(m.amount || '—')}</div>
+        </div>`).join('');
+    }
+  } catch (e) {
+    document.getElementById('activityFeed').innerHTML = '<div style="padding:16px;color:var(--text-dim);font-size:13px">Could not load activity.</div>';
+    document.getElementById('milestonesFeed').innerHTML = '<div style="padding:16px;color:var(--text-dim);font-size:13px">Could not load milestones.</div>';
+  }
+}
+
+async function loadProjects() {
+  try {
+    const res = await apiFetch('/projects');
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    allProjects = data.projects || [];
+    renderProjectsTable();
+  } catch (e) {
+    allProjects = [];
+  }
+}
+
+// ── SCREEN NAVIGATION ─────────────────────────────────
+function showScreen(name, breadcrumb) {
+  currentScreen = name;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+
+  document.querySelectorAll('.nav-item[data-screen]').forEach(el => {
+    el.classList.toggle('active', el.dataset.screen === name || (name === 'detail' && el.dataset.screen === 'projects'));
+  });
+
+  const labels = { dashboard: 'Dashboard', projects: 'Project Portfolio', detail: 'Project Detail', form: 'Update Project', arch: 'Tech Architecture' };
+  const root = document.getElementById('breadcrumbRoot');
+  const sep = document.getElementById('breadcrumbSep');
+  const cur = document.getElementById('breadcrumbCurrent');
+  if (name === 'dashboard') {
+    root.textContent = 'Dashboard'; sep.style.display = 'none'; cur.textContent = '';
+  } else {
+    root.textContent = 'Dashboard'; sep.style.display = '';
+    cur.textContent = breadcrumb || labels[name] || name;
+  }
+}
+
+
+// ── PROJECT TABLE ──────────────────────────────────────
+function renderProjectsTable() {
+  const search = (document.getElementById('searchInput').value || '').toLowerCase();
+  const status = document.getElementById('statusFilter').value;
+  let projects = allProjects.filter(p => {
+    const matchSearch = !search || p.name.toLowerCase().includes(search) || (p.code || '').toLowerCase().includes(search) || (p.owner || '').toLowerCase().includes(search);
+    const matchStatus = !status || p.status === status;
+    return matchSearch && matchStatus;
+  });
+  document.getElementById('projectCount').textContent = `(${projects.length})`;
+  const tbody = document.getElementById('projectsTableBody');
+  if (!projects.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">No projects found</div><div class="empty-state-sub">Try adjusting your search or filter</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = projects.map(p => {
+    const progressColor = p.progress >= 70 ? 'green' : p.progress >= 40 ? '' : 'red';
+    const initials = (p.owner_initials || p.owner.split(' ').map(w => w[0]).join('').slice(0, 2)).toUpperCase();
+    return `<tr onclick="viewProject(${p.id})">
+      <td><div style="font-weight:600;color:var(--text)">${esc(p.name)}</div><div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-top:3px">${esc(p.code)}</div></td>
+      <td><div class="owner-cell"><div class="owner-avatar" style="background:${p.avatar_color||'var(--accent)'}">${esc(initials)}</div><span style="font-size:13px">${esc(p.owner)}</span></div></td>
+      <td><span class="status-pill ${statusClass(p.status)}">${esc(p.status)}</span></td>
+      <td><div class="progress-cell"><div class="progress-track"><div class="progress-fill ${progressColor}" style="width:${p.progress}%"></div></div><span class="progress-pct">${p.progress}%</span></div></td>
+      <td style="font-size:13px;color:var(--text-muted);font-family:var(--mono)">${p.end_date || '—'}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();viewProject(${p.id})">View →</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function statusClass(status) {
+  if (status === 'On Track') return 'on-track';
+  if (status === 'At Risk') return 'at-risk';
+  if (status === 'Delayed') return 'delayed';
+  if (status === 'Completed') return 'completed';
+  return '';
+}
+
+// ── PROJECT DETAIL ─────────────────────────────────────
+async function viewProject(id) {
+  showScreen('detail', 'Project Detail');
+  document.getElementById('detailContent').innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+  billingRevealed = false;
+  try {
+    const res = await apiFetch(`/projects/${id}`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    currentProject = data.project;
+    renderDetail(currentProject);
+  } catch (e) {
+    document.getElementById('detailContent').innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><div class="empty-state-title">Failed to load project</div></div>';
+  }
+}
+
+function renderDetail(p) {
+  const perms = p._permissions || {};
+  const updatedAgo = p.updated_at ? timeSince(p.updated_at) : 'just now';
+  const initials = (p.owner_initials || p.owner.split(' ').map(w=>w[0]).join('').slice(0,2)).toUpperCase();
+
+  let html = `
+  <div class="project-hero">
+    <div class="hero-top">
+      <div class="hero-title-block">
+        <div class="hero-title">${esc(p.name)}</div>
+        <div class="hero-code">${esc(p.code)}</div>
+      </div>
+      <div class="hero-actions">
+        <div class="pulse-indicator"><span class="pulse-dot"></span> Updated ${updatedAgo}</div>
+        <button class="btn btn-ghost btn-sm" onclick="editProject()">✎ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteProject()">🗑 Delete</button>
+        <div class="export-dropdown" id="exportDropdown">
+          <button class="btn btn-ghost btn-sm" onclick="toggleExportMenu(event)">⬇ Export ▾</button>
+          <div class="export-menu" id="exportMenu">
+            <div class="export-menu-item" onclick="exportPDF(${p.id})">📄 Export PDF</div>
+            <div class="export-menu-item" onclick="exportExcel(${p.id})">📊 Export Excel</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-meta-grid">
+      <div class="meta-item"><div class="meta-label">Project Owner</div><div class="meta-value" style="display:flex;align-items:center;gap:8px"><div class="owner-avatar" style="background:${p.avatar_color||'var(--accent)'};">${esc(initials)}</div>${esc(p.owner)}</div></div>
+      <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value"><span class="status-pill ${statusClass(p.status)}">${esc(p.status)}</span></div></div>
+      <div class="meta-item"><div class="meta-label">Start Date</div><div class="meta-value">${p.start_date || '—'}</div></div>
+      <div class="meta-item"><div class="meta-label">Target Go-Live</div><div class="meta-value">${p.end_date || '—'}</div></div>
+      <div class="meta-item"><div class="meta-label">Budget</div><div class="meta-value" style="font-family:var(--mono);font-size:13px">${p.budget || '—'}</div></div>
+    </div>
+  </div>
+  <div class="sections-grid">`;
+
+  // Risks
+  html += `<div class="section-card">
+    <div class="section-header"><span class="section-title"><span class="section-icon">⚠️</span> Risks</span></div>
+    <div class="section-body">`;
+  if (perms.risks === false) {
+    html += accessDenied();
+  } else if (!p.risks || !p.risks.length) {
+    html += '<div style="color:var(--text-dim);font-size:13px">No risks recorded.</div>';
+  } else {
+    p.risks.forEach(r => {
+      html += `<div class="risk-item"><span class="risk-badge ${r.level}">${r.level}</span><div><div class="risk-text">${esc(r.text)}</div>${r.owner ? `<div class="risk-owner">Owner: ${esc(r.owner)}</div>` : ''}</div></div>`;
+    });
+  }
+  html += `</div></div>`;
+
+  // Actions
+  html += `<div class="section-card">
+    <div class="section-header"><span class="section-title"><span class="section-icon">✅</span> Actions from Management</span></div>
+    <div class="section-body">`;
+  if (perms.actions === false) {
+    html += accessDenied();
+  } else if (!p.actions || !p.actions.length) {
+    html += '<div style="color:var(--text-dim);font-size:13px">No actions recorded.</div>';
+  } else {
+    p.actions.forEach(a => {
+      html += `<div class="action-item">
+        <div class="action-check ${a.done ? 'done' : ''}">${a.done ? '✓' : ''}</div>
+        <div><div class="action-text ${a.done ? 'done' : ''}">${esc(a.text)}</div>${a.meta ? `<div class="action-meta">${esc(a.meta)}</div>` : ''}</div>
+      </div>`;
+    });
+  }
+  html += `</div></div>`;
+
+  // Highlights
+  html += `<div class="section-card">
+    <div class="section-header"><span class="section-title"><span class="section-icon">🌟</span> Highlights</span></div>
+    <div class="section-body">`;
+  if (!p.highlights || !p.highlights.length) {
+    html += '<div style="color:var(--text-dim);font-size:13px">No highlights recorded.</div>';
+  } else {
+    p.highlights.forEach(h => {
+      html += `<div class="highlight-item"><span class="highlight-dot">●</span><div class="highlight-text">${esc(h.text)}</div></div>`;
+    });
+  }
+  html += `</div></div>`;
+
+  // Pain Points
+  html += `<div class="section-card">
+    <div class="section-header"><span class="section-title"><span class="section-icon">⚡</span> Pain Points</span></div>
+    <div class="section-body">`;
+  if (perms.pain === false) {
+    html += accessDenied();
+  } else if (!p.pain || !p.pain.length) {
+    html += '<div style="color:var(--text-dim);font-size:13px">No pain points recorded.</div>';
+  } else {
+    p.pain.forEach(pt => {
+      html += `<div class="pain-item"><span class="pain-icon">⚡</span><div class="pain-text">${esc(pt.text)}</div></div>`;
+    });
+  }
+  html += `</div></div>`;
+
+  // Next Steps
+  html += `<div class="section-card">
+    <div class="section-header"><span class="section-title"><span class="section-icon">➡️</span> Next Steps</span></div>
+    <div class="section-body">`;
+  if (!p.nextsteps || !p.nextsteps.length) {
+    html += '<div style="color:var(--text-dim);font-size:13px">No next steps recorded.</div>';
+  } else {
+    p.nextsteps.forEach((ns, i) => {
+      html += `<div class="step-item"><div class="step-num">${i+1}</div><div><div class="step-text">${esc(ns.text)}</div>${ns.due ? `<div class="step-due">Due: ${ns.due}</div>` : ''}</div></div>`;
+    });
+  }
+  html += `</div></div>`;
+
+  // Issue Summary
+  html += `<div class="section-card">
+    <div class="section-header"><span class="section-title"><span class="section-icon">🐛</span> Issue Summary</span></div>
+    <div class="section-body">`;
+  if (perms.issues === false) {
+    html += accessDenied();
+  } else if (!p.issues) {
+    html += '<div style="color:var(--text-dim);font-size:13px">No issue data.</div>';
+  } else {
+    const iss = p.issues;
+    html += `<div class="issues-grid">
+      <div class="issue-card open"><div class="issue-num">${iss.open_count}</div><div class="issue-label">Open</div></div>
+      <div class="issue-card progress"><div class="issue-num">${iss.progress_count}</div><div class="issue-label">In Progress</div></div>
+      <div class="issue-card resolved"><div class="issue-num">${iss.resolved_count}</div><div class="issue-label">Resolved</div></div>
+      <div class="issue-card blocker"><div class="issue-num">${iss.blocker_count}</div><div class="issue-label">Blockers</div></div>
+    </div>`;
+  }
+  html += `</div></div>`;
+
+  // Billing — full width
+  html += `</div>`; // close sections-grid
+  html += `<div style="margin-top:20px"><div class="section-card section-full">
+    <div class="section-header">
+      <span class="section-title"><span class="section-icon">💳</span> Billing Milestones <span class="confidential-badge">CONFIDENTIAL</span></span>`;
+
+  if (perms.billing === 'toggle') {
+    const totalCollected = (p.billing || []).filter(b => b.status === 'paid').reduce((s, b) => {
+      const n = parseFloat((b.amount || '0').replace(/[^0-9.]/g, '')) || 0;
+      return s + n;
+    }, 0);
+    html += `<div style="display:flex;align-items:center;gap:12px">
+      <span class="billing-total" id="billingTotal" style="display:none">Collected: <strong>₹${totalCollected.toLocaleString('en-IN')}</strong></span>
+      <button class="eye-btn" id="billingToggleBtn" onclick="toggleBilling()">👁 Reveal</button>
+    </div>`;
+  }
+  html += `</div>`;
+
+  if (perms.billing === false) {
+    html += `<div class="access-denied"><div class="access-denied-icon">🔒</div><div class="access-denied-text">Billing information is not available for your role</div></div>`;
+  } else if (perms.billing === 'toggle') {
+    html += `<div id="billingLockedView" class="billing-locked">
+      <div class="billing-lock-icon">🔒</div>
+      <div class="billing-lock-title">Billing data is confidential</div>
+      <div class="billing-lock-sub">Click the Reveal button to view billing milestones</div>
+    </div>
+    <div id="billingRevealedView" style="display:none;padding:0 18px 16px">
+      ${renderBillingTable(p.billing || [])}
+    </div>`;
+  }
+
+  html += `</div></div>`;
+
+  document.getElementById('detailContent').innerHTML = html;
+
+  // Close export menu on outside click
+  document.addEventListener('click', closeExportMenu);
+}
+
+function renderBillingTable(billing) {
+  if (!billing.length) return '<div style="padding:20px;color:var(--text-dim);font-size:13px">No billing milestones.</div>';
+  return `<table class="billing-table" style="margin-top:12px">
+    <thead><tr><th>Milestone</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+    <tbody>${billing.map(b => `<tr>
+      <td style="font-weight:500">${esc(b.name)}</td>
+      <td style="font-family:var(--mono);font-size:12.5px;color:var(--text-muted)">${b.date || '—'}</td>
+      <td style="font-family:var(--mono);font-size:13px;font-weight:600">${esc(b.amount || '—')}</td>
+      <td><span class="billing-status-pill ${b.status}">${b.status.charAt(0).toUpperCase() + b.status.slice(1)}</span></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function accessDenied() {
+  return `<div class="access-denied"><div class="access-denied-icon">🔒</div><div class="access-denied-text">Access Denied — insufficient permissions</div></div>`;
+}
+
+function toggleBilling() {
+  billingRevealed = !billingRevealed;
+  const locked = document.getElementById('billingLockedView');
+  const revealed = document.getElementById('billingRevealedView');
+  const btn = document.getElementById('billingToggleBtn');
+  const total = document.getElementById('billingTotal');
+  if (billingRevealed) {
+    locked.style.display = 'none';
+    revealed.style.display = 'block';
+    btn.textContent = '🙈 Hide';
+    if (total) total.style.display = 'inline';
+  } else {
+    locked.style.display = 'block';
+    revealed.style.display = 'none';
+    btn.textContent = '👁 Reveal';
+    if (total) total.style.display = 'none';
+  }
+}
+
+function toggleExportMenu(e) {
+  e.stopPropagation();
+  document.getElementById('exportMenu').classList.toggle('open');
+}
+
+function closeExportMenu() {
+  const menu = document.getElementById('exportMenu');
+  if (menu) menu.classList.remove('open');
+}
+
+function exportPDF(id) {
+  closeExportMenu();
+  window.location.href = `/api/export/pdf/${id}`;
+}
+
+function exportExcel(id) {
+  closeExportMenu();
+  window.location.href = `/api/export/excel/${id}`;
+}
+
+// ── FORM ───────────────────────────────────────────────
+function openNewProjectForm() {
+  editingProjectId = null;
+  currentProject = null;
+  document.getElementById('formTitle').textContent = 'Add New Project';
+  clearForm();
+  showScreen('form', 'Add New Project');
+}
+
+function editProject() {
+  if (!currentProject) return;
+  editingProjectId = currentProject.id;
+  document.getElementById('formTitle').textContent = 'Update Project Details';
+  populateForm(currentProject);
+  showScreen('form', 'Update Project');
+}
+
+function cancelForm() {
+  if (currentProject) showScreen('detail', currentProject.name);
+  else showScreen('projects');
+}
+
+function clearForm() {
+  document.getElementById('fName').value = '';
+  document.getElementById('fCode').value = '';
+  document.getElementById('fOwner').value = '';
+  document.getElementById('fStatus').value = 'On Track';
+  document.getElementById('fStartDate').value = '';
+  document.getElementById('fEndDate').value = '';
+  document.getElementById('fBudget').value = '';
+  document.getElementById('fProgress').value = '0';
+  document.getElementById('fIssueOpen').value = '0';
+  document.getElementById('fIssueProgress').value = '0';
+  document.getElementById('fIssueResolved').value = '0';
+  document.getElementById('fIssueBlocker').value = '0';
+  ['risksList','actionsList','highlightsList','nextstepsList','painList','billingList'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+}
+
+function populateForm(p) {
+  document.getElementById('fName').value = p.name || '';
+  document.getElementById('fCode').value = p.code || '';
+  document.getElementById('fOwner').value = p.owner || '';
+  document.getElementById('fStatus').value = p.status || 'On Track';
+  document.getElementById('fStartDate').value = p.start_date || '';
+  document.getElementById('fEndDate').value = p.end_date || '';
+  document.getElementById('fBudget').value = p.budget || '';
+  document.getElementById('fProgress').value = p.progress || 0;
+
+  document.getElementById('risksList').innerHTML = '';
+  (p.risks || []).forEach(r => addRiskRow(r));
+
+  document.getElementById('actionsList').innerHTML = '';
+  (p.actions || []).forEach(a => addActionRow(a));
+
+  document.getElementById('highlightsList').innerHTML = '';
+  (p.highlights || []).forEach(h => addHighlightRow(h));
+
+  document.getElementById('nextstepsList').innerHTML = '';
+  (p.nextsteps || []).forEach(ns => addNextStepRow(ns));
+
+  document.getElementById('painList').innerHTML = '';
+  (p.pain || []).forEach(pt => addPainRow(pt));
+
+  document.getElementById('billingList').innerHTML = '';
+  (p.billing || []).forEach(b => addBillingRow(b));
+
+  const iss = p.issues || {};
+  document.getElementById('fIssueOpen').value = iss.open_count || 0;
+  document.getElementById('fIssueProgress').value = iss.progress_count || 0;
+  document.getElementById('fIssueResolved').value = iss.resolved_count || 0;
+  document.getElementById('fIssueBlocker').value = iss.blocker_count || 0;
+}
+
+function addRiskRow(r = {}) {
+  const div = document.createElement('div');
+  div.className = 'dynamic-row';
+  div.innerHTML = `
+    <select class="form-input form-select" style="max-width:110px" name="risk_level">
+      <option${r.level==='HIGH'?' selected':''}>HIGH</option>
+      <option${r.level==='MEDIUM'||!r.level?' selected':''}>MEDIUM</option>
+      <option${r.level==='LOW'?' selected':''}>LOW</option>
+    </select>
+    <input class="form-input" type="text" name="risk_text" placeholder="Risk description" value="${esc(r.text||'')}">
+    <input class="form-input" type="text" name="risk_owner" placeholder="Owner" style="max-width:160px" value="${esc(r.owner||'')}">
+    <button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('risksList').appendChild(div);
+}
+
+function addActionRow(a = {}) {
+  const div = document.createElement('div');
+  div.className = 'dynamic-row';
+  div.innerHTML = `
+    <input type="checkbox" class="done-check" name="action_done" ${a.done?'checked':''} style="width:18px;height:18px;accent-color:var(--green)">
+    <input class="form-input" type="text" name="action_text" placeholder="Action description" value="${esc(a.text||'')}">
+    <input class="form-input" type="text" name="action_meta" placeholder="Owner · Due date" style="max-width:200px" value="${esc(a.meta||'')}">
+    <button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('actionsList').appendChild(div);
+}
+
+function addHighlightRow(h = {}) {
+  const text = typeof h === 'string' ? h : (h.text || '');
+  const div = document.createElement('div');
+  div.className = 'dynamic-row';
+  div.innerHTML = `
+    <input class="form-input" type="text" name="highlight_text" placeholder="Highlight" value="${esc(text)}">
+    <button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('highlightsList').appendChild(div);
+}
+
+function addNextStepRow(ns = {}) {
+  const div = document.createElement('div');
+  div.className = 'dynamic-row';
+  div.innerHTML = `
+    <input class="form-input" type="text" name="step_text" placeholder="Next step description" value="${esc(ns.text||'')}">
+    <input class="form-input" type="date" name="step_due" style="max-width:160px" value="${esc(ns.due||'')}">
+    <button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('nextstepsList').appendChild(div);
+}
+
+function addPainRow(pt = {}) {
+  const text = typeof pt === 'string' ? pt : (pt.text || '');
+  const div = document.createElement('div');
+  div.className = 'dynamic-row';
+  div.innerHTML = `
+    <input class="form-input" type="text" name="pain_text" placeholder="Pain point" value="${esc(text)}">
+    <button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('painList').appendChild(div);
+}
+
+function addBillingRow(b = {}) {
+  const div = document.createElement('div');
+  div.className = 'dynamic-row';
+  div.innerHTML = `
+    <input class="form-input" type="text" name="billing_name" placeholder="Milestone name" value="${esc(b.name||'')}">
+    <input class="form-input" type="date" name="billing_date" style="max-width:150px" value="${esc(b.date||'')}">
+    <input class="form-input" type="text" name="billing_amount" placeholder="$0" style="max-width:130px" value="${esc(b.amount||'')}">
+    <select class="form-input form-select" style="max-width:120px" name="billing_status">
+      <option${b.status==='paid'?' selected':''} value="paid">Paid</option>
+      <option${b.status==='pending'||!b.status?' selected':''} value="pending">Pending</option>
+      <option${b.status==='upcoming'?' selected':''} value="upcoming">Upcoming</option>
+    </select>
+    <button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('billingList').appendChild(div);
+}
+
+async function saveProject() {
+  const name = document.getElementById('fName').value.trim();
+  const code = document.getElementById('fCode').value.trim();
+  const owner = document.getElementById('fOwner').value.trim();
+  if (!name || !code || !owner) {
+    showToast('Please fill in Name, Code, and Owner', true); return;
+  }
+
+  // Collect dynamic lists
+  const risks = [...document.getElementById('risksList').querySelectorAll('.dynamic-row')].map(row => ({
+    level: row.querySelector('[name=risk_level]').value,
+    text: row.querySelector('[name=risk_text]').value.trim(),
+    owner: row.querySelector('[name=risk_owner]').value.trim(),
+  })).filter(r => r.text);
+
+  const actions = [...document.getElementById('actionsList').querySelectorAll('.dynamic-row')].map(row => ({
+    done: row.querySelector('[name=action_done]').checked ? 1 : 0,
+    text: row.querySelector('[name=action_text]').value.trim(),
+    meta: row.querySelector('[name=action_meta]').value.trim(),
+  })).filter(a => a.text);
+
+  const highlights = [...document.getElementById('highlightsList').querySelectorAll('.dynamic-row')].map(row => ({
+    text: row.querySelector('[name=highlight_text]').value.trim(),
+  })).filter(h => h.text);
+
+  const nextsteps = [...document.getElementById('nextstepsList').querySelectorAll('.dynamic-row')].map(row => ({
+    text: row.querySelector('[name=step_text]').value.trim(),
+    due: row.querySelector('[name=step_due]').value,
+  })).filter(ns => ns.text);
+
+  const pain = [...document.getElementById('painList').querySelectorAll('.dynamic-row')].map(row => ({
+    text: row.querySelector('[name=pain_text]').value.trim(),
+  })).filter(p => p.text);
+
+  const billing = [...document.getElementById('billingList').querySelectorAll('.dynamic-row')].map(row => ({
+    name: row.querySelector('[name=billing_name]').value.trim(),
+    date: row.querySelector('[name=billing_date]').value,
+    amount: row.querySelector('[name=billing_amount]').value.trim(),
+    status: row.querySelector('[name=billing_status]').value,
+  })).filter(b => b.name);
+
+  const payload = {
+    name, code, owner,
+    status: document.getElementById('fStatus').value,
+    start_date: document.getElementById('fStartDate').value || null,
+    end_date: document.getElementById('fEndDate').value || null,
+    budget: document.getElementById('fBudget').value.trim() || null,
+    progress: parseInt(document.getElementById('fProgress').value) || 0,
+    risks, actions, highlights, nextsteps, pain, billing,
+    issues: {
+      open_count: parseInt(document.getElementById('fIssueOpen').value) || 0,
+      progress_count: parseInt(document.getElementById('fIssueProgress').value) || 0,
+      resolved_count: parseInt(document.getElementById('fIssueResolved').value) || 0,
+      blocker_count: parseInt(document.getElementById('fIssueBlocker').value) || 0,
+    },
+  };
+
+  const url = editingProjectId ? `/projects/${editingProjectId}` : '/projects';
+  const method = editingProjectId ? 'PUT' : 'POST';
+
+  try {
+    const res = await apiFetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      showToast(err.error || 'Save failed', true); return;
+    }
+    const data = await res.json();
+    currentProject = data.project;
+    await loadProjects();
+    showToast('Project saved successfully');
+    showScreen('detail', currentProject.name);
+    renderDetail(currentProject);
+  } catch (e) {
+    showToast('Network error — please try again', true);
+  }
+}
+
+// ── UTILITY ────────────────────────────────────────────
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function timeSince(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min} min ago`;
+  const hrs = Math.floor(min / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastText').textContent = msg;
+  toast.className = 'toast' + (isError ? ' toast-error' : '');
+  toast.querySelector('.toast-icon').textContent = isError ? '✕' : '✓';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+async function confirmDeleteProject() {
+  if (!currentProject) return;
+  const confirmed = confirm(`Delete "${currentProject.name}"?\n\nThis will permanently remove the project and all its data. This cannot be undone.`);
+  if (!confirmed) return;
+  try {
+    const res = await apiFetch(`/projects/${currentProject.id}`, { method: 'DELETE' });
+    if (!res.ok) { showToast('Failed to delete project', true); return; }
+    await loadProjects();
+    currentProject = null;
+    showToast('Project deleted');
+    showScreen('projects');
+  } catch (e) {
+    showToast('Network error — please try again', true);
+  }
+}
+
+async function logout() {
+  await apiFetch('/auth/logout', { method: 'POST' });
+  window.location.href = '/login';
+}
+</script>
+</body>
+</html>

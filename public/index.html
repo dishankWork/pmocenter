@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>PM Command Center</title></head>
+<body>
+<script>
+  // Check auth and redirect
+  fetch('/api/auth/me').then(r => {
+    if (r.ok) window.location.href = '/app';
+    else window.location.href = '/login';
+  }).catch(() => window.location.href = '/login');
+</script>
+</body>
+</html>

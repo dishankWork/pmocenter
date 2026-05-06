@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Airlinq PM Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0d0f1f;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-image: radial-gradient(ellipse at 20% 50%, rgba(41,38,226,0.15) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 20%, rgba(109,79,204,0.1) 0%, transparent 50%);
+  }
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 44px 40px 36px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+  }
+  .logo-area {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .logo-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: #2926E2;
+    display: inline-block;
+  }
+  .logo-sub {
+    font-size: 12px;
+    color: #4a4f72;
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f1124;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #4a4f72;
+    margin-bottom: 28px;
+  }
+  .form-group {
+    margin-bottom: 18px;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4a4f72;
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid rgba(41,38,226,0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: #0f1124;
+    background: #f5f6fb;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+  input:focus {
+    border-color: #2926E2;
+    box-shadow: 0 0 0 3px rgba(41,38,226,0.1);
+    background: #ffffff;
+  }
+  .btn-login {
+    width: 100%;
+    padding: 13px;
+    background: #2926E2;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.15s, transform 0.1s;
+    letter-spacing: 0.01em;
+  }
+  .btn-login:hover { background: #1e1cb8; }
+  .btn-login:active { transform: scale(0.99); }
+  .btn-login:disabled { background: #9297b8; cursor: not-allowed; }
+  .error-msg {
+    display: none;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #d63a3a;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 14px;
+  }
+  .demo-box {
+    margin-top: 28px;
+    background: #0d0f1f;
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .demo-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9297b8;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .demo-creds {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    line-height: 1.9;
+  }
+  .demo-row { display: flex; gap: 8px; align-items: center; }
+  .demo-user { color: #7dd3fc; min-width: 62px; }
+  .demo-pass { color: #86efac; min-width: 80px; }
+  .demo-arrow { color: #6b7280; font-size: 10px; }
+  .demo-role { color: #9297b8; font-size: 10.5px; }
+  .divider { height: 1px; background: rgba(41,38,226,0.1); margin: 20px 0 16px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo-area">
+    <div class="logo-text">AIRLINQ</div>
+    <div class="logo-sub">PM Command Center</div>
+  </div>
+  <h1>Welcome back</h1>
+  <p class="subtitle">Sign in to your program management workspace</p>
+  <form id="loginForm">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" placeholder="Enter your username" autocomplete="username" autofocus>
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn-login" id="submitBtn">Sign In</button>
+    <div class="error-msg" id="errorMsg"></div>
+  </form>
+  <div class="divider"></div>
+  <div class="demo-box">
+    <div class="demo-title">Credentials</div>
+    <div class="demo-creds">
+      <div class="demo-row"><span class="demo-user">pmuser</span><span class="demo-pass">admin@123</span><span class="demo-arrow">→</span><span class="demo-role">Program Director</span></div>
+    </div>
+  </div>
+</div>
+<script>
+  const form = document.getElementById('loginForm');
+  const errorMsg = document.getElementById('errorMsg');
+  const submitBtn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    if (!username || !password) {
+      showError('Please enter username and password.');
+      return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in...';
+    errorMsg.style.display = 'none';
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        window.location.href = '/app';
+      } else {
+        showError(data.error || 'Login failed. Please check your credentials.');
+      }
+    } catch (err) {
+      showError('Network error. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign In';
+    }
+  });
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.style.display = 'block';
+  }
+</script>
+</body>
+</html>
